@@ -1,45 +1,38 @@
 import os
-from flask import Flask, render_template, request
+from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 import pytesseract
 from PIL import Image
 import re
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 app.config['UPLOAD_FOLDER'] = "uploads"
 
-# Set tesseract path if needed (Windows)
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-# ----------------------------
-# Nutri-Score Calculation
-# ----------------------------
 def calculate_nutriscore(nutrients):
-    energy = nutrients.get("energy", 0)   # kJ
-    sugar = nutrients.get("sugar", 0)     # g
-    sat_fat = nutrients.get("saturated_fat", 0)  # g
-    sodium = nutrients.get("sodium", 0)   # mg
-    fiber = nutrients.get("fiber", 0)     # g
-    protein = nutrients.get("protein", 0) # g
+    energy = nutrients.get("energy", 0)
+    sugar = nutrients.get("sugar", 0)
+    sat_fat = nutrients.get("saturated_fat", 0)
+    sodium = nutrients.get("sodium", 0)
+    fiber = nutrients.get("fiber", 0)
+    protein = nutrients.get("protein", 0)
 
-    # Negative points
     points_neg = 0
     points_neg += energy / 335
     points_neg += sugar / 4.5
     points_neg += sat_fat / 1
     points_neg += sodium / 90
 
-    # Positive points
     points_pos = 0
     points_pos += fiber / 0.9
     points_pos += protein / 1.6
 
     score = int(round(points_neg - points_pos))
-
-    # Clamp score between -15 and 40
     score = max(-15, min(score, 40))
 
-    # Determine Nutri-Score label
     if score <= -1:
         label = "A"
     elif score <= 2:
@@ -53,13 +46,8 @@ def calculate_nutriscore(nutrients):
 
     return score, label
 
-# ----------------------------
-# Extract Nutrients from OCR
-# ----------------------------
 def extract_nutrients(text):
     nutrients = {}
-
-    # Flexible regex for common label variations
     energy_match = re.search(r"(?:Energy|ENERGY|energy)\s*[:]?[\s]*([0-9]+)\s*k[JK]?", text)
     sugar_match = re.search(r"(?:Sugar|Sugars|sugar)\s*[:]?[\s]*([0-9]+)", text, re.I)
     sat_fat_match = re.search(r"(?:Saturated Fat|Saturates|saturated fat)\s*[:]?[\s]*([0-9]+)", text, re.I)
@@ -76,51 +64,42 @@ def extract_nutrients(text):
 
     return nutrients
 
-# ----------------------------
-# Routes
-# ----------------------------
-@app.route("/", methods=["GET", "POST"])
+@app.route("/check", methods=["POST"])
 def index():
     ocr_text = None
     nutrients = None
     score = None
     label = None
 
-    if request.method == "POST":
-        file = request.files.get("file")
-        if not file or file.filename == "":
-            return render_template("index.html", error="No file selected")
+    file = request.files.get("file")
+    if not file or file.filename == "":
+        return jsonify({"error": "No file selected"}), 400
 
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-        file.save(filepath)
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+    file.save(filepath)
 
-        # OCR
-        img = Image.open(filepath)
-        ocr_text = pytesseract.image_to_string(img)
+    img = Image.open(filepath)
+    ocr_text = pytesseract.image_to_string(img)
+    nutrients = extract_nutrients(ocr_text)
 
-        # Nutrients
-        nutrients = extract_nutrients(ocr_text)
+    if nutrients:
+        score, label = calculate_nutriscore({
+            "energy": nutrients.get("Energy (kJ)", 0),
+            "sugar": nutrients.get("Sugar (g)", 0),
+            "saturated_fat": nutrients.get("Saturated Fat (g)", 0),
+            "sodium": nutrients.get("Sodium (mg)", 0),
+            "fiber": nutrients.get("Fiber (g)", 0),
+            "protein": nutrients.get("Protein (g)", 0),
+        })
 
-        if nutrients:
-            score, label = calculate_nutriscore({
-                "energy": nutrients.get("Energy (kJ)", 0),
-                "sugar": nutrients.get("Sugar (g)", 0),
-                "saturated_fat": nutrients.get("Saturated Fat (g)", 0),
-                "sodium": nutrients.get("Sodium (mg)", 0),
-                "fiber": nutrients.get("Fiber (g)", 0),
-                "protein": nutrients.get("Protein (g)", 0),
-            })
+    return jsonify({
+        "ocr_text": ocr_text,
+        "nutrients": nutrients,
+        "score": score,
+        "label": label
+    })
 
-    return render_template("index.html",
-                           ocr_text=ocr_text,
-                           nutrients=nutrients,
-                           score=score,
-                           label=label)
-
-# ----------------------------
-# Run on LAN
-# ----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
