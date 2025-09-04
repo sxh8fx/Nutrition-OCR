@@ -107,7 +107,7 @@ class NutriScanApp {
         formData.append("file", this.fileInput.files[0])
 
         try {
-            const response = await fetch("http://127.0.0.1:5000/check", {
+            const response = await fetch("https://nutrition-ocr-backend.onrender.com/check", {
                 method: "POST",
                 body: formData,
             })
