@@ -1,0 +1,164 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #eef2f7;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+.upload-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    border: 2px dashed #0077cc;
+    border-radius: 12px;
+    background: #f0f8ff;
+    margin-bottom: 30px;
+}
+
+.upload-box input[type="file"] {
+    font-size: 14px;
+}
+
+.upload-box button {
+    padding: 10px 20px;
+    background: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.upload-box button:hover {
+    background: #005fa3;
+}
+
+.results h2 {
+    margin-top: 25px;
+    font-size: 20px;
+    color: #34495e;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table th,
+table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+table th {
+    background: #f0f0f0;
+}
+
+/* Nutri-Score Badge */
+.nutriscore-badge {
+    display: flex;
+    justify-content: space-between;
+    width: 400px;
+    margin: 10px 0 25px 0;
+}
+
+.score-box {
+    flex: 1;
+    padding: 12px 0;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 6px;
+    color: white;
+    margin: 0 3px;
+    background: #ccc;
+    transition: all 0.3s ease;
+}
+
+.score-box.A {
+    background: #4caf50;
+}
+
+.score-box.B {
+    background: #8bc34a;
+    color: #333;
+}
+
+.score-box.C {
+    background: #ffeb3b;
+    color: #333;
+}
+
+.score-box.D {
+    background: #ff9800;
+}
+
+.score-box.E {
+    background: #f44336;
+}
+
+.score-box.active {
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Score Graph */
+.score-graph {
+    display: flex;
+    height: 20px;
+    margin: 10px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #ddd;
+}
+
+.graph-segment {
+    flex: 1;
+    background: #eee;
+}
+
+.graph-segment.highlight {
+    background: #0077cc;
+}
+
+/* Score Label */
+.score-label {
+    font-weight: bold;
+    margin-top: 5px;
+    font-size: 16px;
+}
+
+/* OCR Text */
+.ocr-text {
+    margin-top: 30px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.ocr-text pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 13px;
+    color: #555;
+}
