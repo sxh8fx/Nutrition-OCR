@@ -10,7 +10,7 @@ app = Flask(__name__)
 CORS(app)
 app.config['UPLOAD_FOLDER'] = "uploads"
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+pytesseract.pytesseract.tesseract_cmd = "tesseract"
 
 def calculate_nutriscore(nutrients):
     energy = nutrients.get("energy", 0)
